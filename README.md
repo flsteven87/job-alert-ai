@@ -1,6 +1,84 @@
 # Job Alert AI
 
-Job Alert AI 是一個智能職缺配對與通知系統，幫助用戶自動追蹤指定公司的職缺發布，並根據用戶履歷智能匹配合適的職位。
+Job Alert AI 是一個智能職缺通知系統，能夠自動爬取指定公司的職缺頁面，分析用戶履歷與職缺的匹配度，並在發現合適職缺時通過電子郵件通知用戶。
+
+## 專案結構
+
+```
+job-alert-ai/
+├── app/                    # 主應用程序目錄
+│   ├── api/                # API 路由
+│   │   └── api_v1/         # API v1 版本
+│   │       ├── endpoints/  # API 端點
+│   │       └── api.py      # API 路由集合
+│   ├── core/               # 核心配置
+│   ├── db/                 # 數據庫設置
+│   ├── models/             # SQLAlchemy 數據模型
+│   ├── schemas/            # Pydantic 數據驗證模型
+│   ├── services/           # 業務邏輯服務
+│   ├── utils/              # 工具函數
+│   └── main.py             # 主應用入口
+├── tests/                  # 測試目錄
+├── .env                    # 環境變數
+├── .env.example            # 環境變數範例
+├── environment.yml         # Conda 環境配置
+└── PLANNING.md             # 專案規劃文檔
+```
+
+## 環境設置
+
+此專案使用 Conda 進行環境管理。
+
+### 使用 Conda 創建環境
+
+```bash
+# 創建 Conda 環境
+conda env create -f environment.yml
+
+# 啟動環境
+conda activate job-alert-ai
+```
+
+### 設置環境變數
+
+複製 `.env.example` 為 `.env` 並填入適當的設置值：
+
+```bash
+cp .env.example .env
+# 編輯 .env 文件設置適當的值
+```
+
+## 運行應用
+
+### 開發模式
+
+```bash
+# 啟動 FastAPI 開發伺服器
+uvicorn app.main:app --reload
+```
+
+伺服器將運行在 http://localhost:8000
+
+### API 文檔
+
+- Swagger UI: http://localhost:8000/docs
+- ReDoc: http://localhost:8000/redoc
+
+## 測試
+
+運行測試：
+
+```bash
+pytest
+```
+
+## 專案進度
+
+請參考 `TASK.md` 檔案了解專案任務和進度。
+
+## 規劃文檔
+
+詳細的系統設計和規劃請參考 `PLANNING.md` 文檔。
 
 ## 核心功能
 
@@ -65,31 +143,6 @@ uvicorn app.main:app --reload
 
 # 啟動前端應用
 streamlit run frontend/app.py
-```
-
-## 專案結構
-```
-job-alert-ai/
-├── app/                    # 後端 API
-│   ├── api/                # API 路由
-│   ├── core/               # 核心設置
-│   ├── crud/               # 數據庫操作
-│   ├── db/                 # 數據庫模型
-│   ├── schemas/            # Pydantic 模型
-│   ├── services/           # 業務邏輯
-│   │   ├── crawler/        # 爬蟲服務
-│   │   ├── matcher/        # 匹配算法
-│   │   └── notifier/       # 通知服務
-│   └── main.py             # 應用入口
-├── frontend/               # Streamlit 前端
-├── tests/                  # 測試目錄
-├── .env.example            # 環境變量示例
-├── docker-compose.yml      # Docker 配置
-├── Dockerfile              # Docker 構建文件
-├── environment.yml         # Conda 環境配置
-├── PLANNING.md             # 專案規劃文檔
-├── TASK.md                 # 任務清單
-└── README.md               # 專案說明
 ```
 
 ## 開發指南

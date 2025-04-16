@@ -20,7 +20,6 @@ Job Alert AI 是一個智能職缺通知系統，能夠自動爬取指定公司�
 ### 部署 & 運維
 - **容器化**: Docker + Docker Compose
 - **環境管理**: Conda
-- **雲端托管**: AWS / DigitalOcean
 
 ## 系統架構
 
@@ -221,11 +220,6 @@ Job Alert AI 是一個智能職缺通知系統，能夠自動爬取指定公司�
 - 使用 Docker 容器化應用
 - 使用 Conda 環境管理依賴
 - 分開的開發、測試和生產環境
-
-### 監控與日誌
-- 使用 Prometheus 和 Grafana 監控系統性能
-- ELK Stack 處理日誌
-- 自動報警系統
 
 ## 擴展性與未來計劃
 
