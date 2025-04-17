@@ -84,8 +84,12 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     
     # Jina AI API settings
-    # 應該以 "jina_" 開頭，例如：jina_4a46f6e822fc4838ba4cecc9850e2916T8gKe7ualMrODw7eoPtxnzm3RQrK
+    # 金鑰必須以 "jina_" 開頭
     JINA_AI_API_KEY: str
+    
+    # FireCrawl API settings
+    # 金鑰必須以 "fc-" 開頭
+    FIRECRAWL_API_KEY: str = ""
     
     # Email settings
     SMTP_HOST: str

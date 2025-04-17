@@ -4,7 +4,7 @@ Crawler service factory for job posting extraction.
 import logging
 from typing import Dict, List, Optional
 
-from app.services.crawler.jina_reader import JinaReaderResponse, JinaReaderService
+from app.services.crawler.firecrawl import FirecrawlService, JobPostingsResponse
 
 # 設置日誌記錄器
 logger = logging.getLogger(__name__)
@@ -19,61 +19,86 @@ class CrawlerService:
         """
         Initialize the crawler service with required dependencies.
         """
-        # 初始化 Jina Reader 服務
-        self.jina_reader = JinaReaderService()
+        # 初始化 FireCrawl 服務
+        self.firecrawl = FirecrawlService()
     
-    async def crawl_page(self, url: str) -> JinaReaderResponse:
+    async def crawl_job_postings(self, url: str, company_name: Optional[str] = None, 
+                            append_positions_tag: bool = False) -> JobPostingsResponse:
         """
-        Crawl a job posting page and extract its content.
+        Crawl job postings from a career page using FireCrawl.
         
         Args:
-            url: URL of the job posting page.
+            url: URL of the career page.
+            company_name: Name of the company. If not provided, will be extracted from URL.
+            append_positions_tag: If True, append "#positions" to the URL (useful for some career sites).
             
         Returns:
-            JinaReaderResponse: Structured response with extracted content.
+            JobPostingsResponse: Extracted job postings.
         """
-        logger.info(f"Crawling job posting page: {url}")
+        logger.info(f"Crawling job postings from URL: {url}")
         
-        # 使用 Jina AI Reader API 提取頁面內容
-        response = await self.jina_reader.extract_content(url)
-        
-        logger.info(f"Successfully crawled page: {url}")
-        return response
-    
-    async def process_extracted_content(self, response: JinaReaderResponse) -> Dict:
-        """
-        Process the extracted content to structure job posting data.
-        This is a placeholder for future LLM-based extraction logic.
-        
-        Args:
-            response: The response from Jina AI Reader API.
+        # 使用 FireCrawl 爬取職缺
+        try:
+            response = await self.firecrawl.extract_job_postings(
+                url=url, 
+                company_name=company_name,
+                append_positions_tag=append_positions_tag
+            )
+            logger.info(f"Successfully extracted {len(response.job_postings)} job postings using FireCrawl")
+            return response
+        except Exception as e:
+            logger.error(f"Error using FireCrawl for URL {url}: {str(e)}")
+            raise
             
-        Returns:
-            Dict: Structured job posting data.
-        """
-        # 這裡只是一個基本的實現，未來會整合 LLM 來提取結構化的職缺數據
-        return {
-            "url": response.url,
-            "title": response.title or "Unknown Job Title",
-            "content": response.content[:200] + "..." if len(response.content) > 200 else response.content,
-            "status": "extracted",
-            "processing_status": "pending"
-        }
-    
     async def crawl_and_process(self, url: str) -> Dict:
         """
-        Crawl a job posting page and process its content.
+        Crawl a page and extract its basic content using FireCrawl.
+        
+        This is a simplified method for general content extraction, useful for testing and
+        for scenarios where full job posting extraction is not needed.
         
         Args:
-            url: URL of the job posting page.
+            url: URL of the page to crawl.
             
         Returns:
-            Dict: Structured job posting data.
+            Dict: Basic extracted information about the page.
         """
-        # 爬取頁面
-        response = await self.crawl_page(url)
+        logger.info(f"Performing basic crawl of URL: {url}")
         
-        # 處理提取的內容
-        result = await self.process_extracted_content(response)
-        
-        return result 
+        try:
+            # 嘗試基本提取，這裡我們先只獲取職缺作為內容示例
+            job_response = await self.firecrawl.extract_job_postings(
+                url=url, 
+                debug_mode=True,
+                append_positions_tag=False  # 對通用爬取，不添加 #positions 標籤
+            )
+            
+            # 將提取的資訊轉換為簡單的頁面內容
+            content = "Job postings found on page:\n"
+            if job_response.job_postings:
+                for i, job in enumerate(job_response.job_postings, 1):
+                    content += f"{i}. {job.title} - {job.url}\n"
+            else:
+                content = "No structured content could be extracted from the page."
+                
+            result = {
+                "url": url,
+                "title": f"Page from {url}",
+                "content": content,
+                "status": "successful" if job_response.job_postings else "partial",
+                "processing_status": "completed"
+            }
+            
+            logger.info(f"Basic crawl completed for URL: {url}")
+            return result
+            
+        except Exception as e:
+            logger.error(f"Error performing basic crawl for URL {url}: {str(e)}")
+            # 返回錯誤信息而不是拋出異常，便於API處理
+            return {
+                "url": url,
+                "title": None,
+                "content": f"Error extracting content: {str(e)}",
+                "status": "failed",
+                "processing_status": "error"
+            } 
